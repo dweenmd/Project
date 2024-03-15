@@ -36,6 +36,7 @@ class User:
         self.account_number = account_number
         self.balance = 0
         self.transactions = []
+        self.total_loan_amount = 0
 
     def deposit(self, amount):
         self.balance += amount
@@ -81,16 +82,15 @@ class User:
         if bank.loan_feature_enabled and not bank.is_bankrupt():
             if amount <= self.balance * 2:
                 if bank.loan_money(amount):
-                    self.balance += amount  
-                    loan_history = f"{self.name} Loan total ${bank.total_loan_amount}"
+                    self.balance += amount
                     self.transactions = [t for t in self.transactions if not t.startswith(f"{self.name} Loan total")]
-                    self.transactions.append(loan_history)
+                    self.transactions.append(f"{self.name} Loan total ${self.total_loan_amount + amount}")  # Update total loan amount in transaction history
+                    self.total_loan_amount += amount  # Update user's total loan amount
                     return
             else:
-                print("Loan request for rejected. Loan amount exceeds its limit.")
+                print("Loan request rejected. Loan amount exceeds its limit.")
         else:
             print("Loan feature is currently disabled, or the bank is bankrupt.")
-
 
 class Admin:
     def __init__(self):
@@ -131,12 +131,13 @@ user1 = admin.bank.users[0]
 user1.deposit(1000)
 user2 = admin.bank.users[1]
 user2.deposit(8000)
-#user 1
+# user 1
 user1.check_balance()
 user1.withdraw(500)
 user1.transfer(user2, 300)
 admin.toggle_loan_feature()
 user1.request_loan(1200, admin.bank)
+user1.request_loan(100, admin.bank)
 user1.check_balance()
 print('\n')
 user1.view_transactions()
