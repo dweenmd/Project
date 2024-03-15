@@ -4,6 +4,7 @@ class Bank:
         self.users = []
         self.loan_feature_enabled = True
         self.total_loan_amount = 0
+
     def deposit(self, amount):
         self.balance += amount
 
@@ -15,9 +16,19 @@ class Bank:
 
     def toggle_loan_feature(self, enabled=True):
         self.loan_feature_enabled = enabled
-        
+
     def is_bankrupt(self):
         return self.balance <= 0
+
+    def loan_money(self, amount):
+        if self.balance >= amount:
+            self.balance -= amount
+            self.total_loan_amount += amount
+            return True
+        else:
+            print("Bank is bankrupt. Cannot process loan.")
+            return False
+
 
 class User:
     def __init__(self, name, account_number):
@@ -32,17 +43,17 @@ class User:
 
     def _perform_transaction(self, amount, transaction_type, receiver=None):
         if transaction_type == 'withdraw' and self.balance < amount:
-            print("Bank is bankrupt. Cannot withdraw.")
+            print("Not enough balance.")
             return False
         elif transaction_type == 'transfer' and self.balance < amount:
-            print("Bank is bankrupt. Cannot transfer.")
+            print("Not enough balance.")
             return False
 
         if transaction_type == 'transfer':
             self.balance -= amount
             receiver.balance += amount
             self.transactions.append(f"{self.name} transferred ${amount} to {receiver.name}")
-            receiver.transactions.append(f"{receiver.name} received ${amount} from {self.name}")  # Corrected line
+            receiver.transactions.append(f"{receiver.name} received ${amount} from {self.name}")
         else:
             if transaction_type == 'withdraw':
                 self.balance -= amount
@@ -69,10 +80,9 @@ class User:
     def request_loan(self, amount, bank):
         if bank.loan_feature_enabled and not bank.is_bankrupt():
             if amount <= self.balance * 2:
-                if self._perform_transaction(amount, 'loan'):
-                    bank.total_loan_amount += amount
+                if bank.loan_money(amount):
+                    self.balance += amount  
                     loan_history = f"{self.name} Loan total ${bank.total_loan_amount}"
-                    
                     self.transactions = [t for t in self.transactions if not t.startswith(f"{self.name} Loan total")]
                     self.transactions.append(loan_history)
                     return
@@ -103,6 +113,12 @@ class Admin:
     def toggle_loan_feature(self, enabled=True):
         self.bank.toggle_loan_feature(enabled)
 
+    def loan_money(self, amount):
+        if self.bank.loan_money(amount):
+            print(f"Admin issued a loan of ${amount}")
+        else:
+            print("Loan cannot be issued.")
+
 
 # driver code
 admin = Admin()
@@ -115,12 +131,12 @@ user1 = admin.bank.users[0]
 user1.deposit(1000)
 user2 = admin.bank.users[1]
 user2.deposit(8000)
-
+#user 1
 user1.check_balance()
 user1.withdraw(500)
 user1.transfer(user2, 300)
 admin.toggle_loan_feature()
-user1.request_loan(1500, admin.bank)
+user1.request_loan(1200, admin.bank)
 user1.check_balance()
 print('\n')
 user1.view_transactions()
@@ -128,9 +144,11 @@ print('\n')
 admin.check_total_balance()
 print('\n')
 
-#user 2
+# user 2
 user2.request_loan(4000, admin.bank)
 user2.request_loan(2000, admin.bank)
 user2.view_transactions()
+user2.check_balance()
 print('\n')
 admin.check_total_loan_amount()
+admin.check_total_balance()
