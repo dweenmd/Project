@@ -84,7 +84,7 @@ class User:
                 if bank.loan_money(amount):
                     self.balance += amount
                     self.transactions = [t for t in self.transactions if not t.startswith(f"{self.name} Loan total")]
-                    self.transactions.append(f"{self.name} Loan total ${self.total_loan_amount + amount}")  # Update total loan amount in transaction history
+                    self.transactions.append(f"{self.name} Loan total ${self.total_loan_amount + amount}")  
                     self.total_loan_amount += amount  # Update user's total loan amount
                     return
             else:
