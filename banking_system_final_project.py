@@ -85,7 +85,7 @@ class User:
                     self.balance += amount
                     self.transactions = [t for t in self.transactions if not t.startswith(f"{self.name} Loan total")]
                     self.transactions.append(f"{self.name} Loan total ${self.total_loan_amount + amount}")  
-                    self.total_loan_amount += amount  # Update user's total loan amount
+                    self.total_loan_amount += amount 
                     return
             else:
                 print("Loan request rejected. Loan amount exceeds its limit.")
